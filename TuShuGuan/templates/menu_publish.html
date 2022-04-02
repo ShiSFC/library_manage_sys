@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block book_list %}
+
+<form action="/ul/menu/query/" method="post"  style="float:left">
+    <p>
+        <input type="text" placeholder="请输入书名" name="publish">
+        <input type="submit" class="btn btn-info" value="Search">
+    </p>
+</form>
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" style="float:right; margin-right:20px">
+    添加出版社
+</button>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times</span>
+                </button>
+                <h4 class="modal-title" id="myModalLabel">添加出版社</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="出版社" name="name">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="出版社地址" name="addr">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" id="add_publish" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<table class="table table-hover">
+    <tr>
+        <th>序号</th>
+        <th>出版社</th>
+        <th>地址</th>
+        <th colspan="2" style="text-align: center">操作</th>
+    </tr>
+    {% for publish in book_list %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ publish.name }}</td>
+        <td>{{ publish.addr }}</td>
+        <td colspan="2" style="text-align: center">
+            <a href="/ul/menu/publish/edit/?id={{ publish.id }}"><button class="btn-info">编辑</button></a>
+            <a href="/ul/menu/publish/del/?id={{ publish.id }}"><button class="btn-danger">删除</button></a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
+    <ul class="pagination">
+        {% if book_list.has_previous %}
+            <li><a href="/ul/menu/publish/?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
+        {% else %}
+            <li class="disabled"><a href="#">上页</a></li>
+        {% endif %}
+        {% for page in p.page_range %}
+            {% if page_number == page %}
+                <li><a href="/ul/menu/publish/?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li><a href="/ul/menu/publish/?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
+            {% endif %}
+        {% endfor %}
+        {% if book_list.has_next %}
+            <li><a href="/ul/menu/publish/?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
+        {% else %}
+            <li class="disabled"><a href="#">下页</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}
+{% block js %}
+    <script>
+        $('#add_publish').click(function(){
+            var $name = $('[name = name]').val();
+            var $addr = $('[name = addr]').val();
+            $.ajax({
+                url:'/ul/menu/publish/add/',
+                type:'POST',
+                data:{'name':$name,'addr':$addr},
+                success:function(data){
+                    if(data=='ok'){
+                        window.location.reload()
+                        alert('添加成功')
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}

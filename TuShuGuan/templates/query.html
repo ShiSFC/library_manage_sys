@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load my_tags %}
+{% block book_list %}
+    <form action="{% url 'book_query' %}" method="post"  style="float:left;">
+        <p>
+            <input type="text" placeholder="请输入书名" name="title">
+            <input type="submit" class="btn btn-info" value="Search">
+        </p>
+    </form>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                <span aria-hidden="true">&times</span>
+            </button>
+            <h4 class="modal-title" id="myModalLabel">借书信息填写</h4>
+        </div>
+        <div class="modal-body">
+            <form>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="读者证号" name="certificate">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="借阅时长" name="days" value="60">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+            <button type="button" id="add_publish" class="btn btn-primary">确定</button>
+        </div>
+    </div>
+    </div>
+    </div>
+    <table class="table table-hover">
+        <tr>
+            <th>序号</th>
+            <th>书名</th>
+            <th>作者</th>
+            <th>出版社</th>
+            <th>剩余数量</th>
+            <th style="text-align: center">操作</th>
+        </tr>
+        {% for book in book_list %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ book.title }}</td>
+            <td>
+                {% for author in book.author.all %}
+                    {{ author.name }}
+                {% endfor %}
+            </td>
+            <td>{{ book.publish.name }}</td>
+            <td>{{ book.totalCount|my_filter:book.borrowCount }}</td>
+            <td style="text-align: center">
+                <a href="{% url 'book_detail' %}?id={{ book.id }}" style="margin-right:5px"><button class="btn-info">详情</button></a>
+                {% ifequal book.totalCount book.borrowCount %}
+                <a href="#" style="margin-right:5px"><button class="btn-info" style="opacity:0.6;cursor:not-allowed;" disabled="disabled">借书</button></a>
+                {% else %}
+                <a href="{% url 'book_query' %}#myModal/?id={{ book.id }}" style="margin-right:5px"><button class="btn-info" data-toggle="modal" data-target="#myModal">借书</button></a>
+                {% endifequal %}
+                <a href="{% url 'book_edit' %}?id={{ book.id }}" style="margin-right:5px"><button class="btn-info">编辑</button></a>
+                <a href="{% url 'book_del' %}?id={{ book.id }}" style="margin-right:5px"><button class="btn-danger">删除</button></a>
+            </td>
+        </tr>
+        {% empty %}
+        <td colspan="5"><h1>抱歉没有查询结果。。。</h1></td>
+        {% endfor %}
+    </table>
+    <nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
+        <ul class="pagination">
+            {% if book_list.has_previous %}
+                <li><a href="{% url 'book_query' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li class="disabled"><a href="#">上页</a></li>
+            {% endif %}
+            {% for page in p.page_range %}
+                {% if page_number == page %}
+                    <li><a href="{% url 'book_query' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+                {% else %}
+                    <li><a href="{% url 'book_query' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
+                {% endif %}
+            {% endfor %}
+            {% if book_list.has_next %}
+                <li><a href="{% url 'book_query' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li class="disabled"><a href="#">下页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}
+{% block js %}
+    <script>
+        $('#add_publish').click(function(){
+            var url = window.location.href;//获取到当前页面的url
+            var pattern = 'id' + '=([0-9]*)';
+            var $id = url.match(pattern)
+            $id = $id[1];
+
+            var $certificate = $('[name = certificate]').val();
+            var $days = $('[name = days]').val();
+            $.ajax({
+                url:'/ul/menu/book/borrow/',
+                type:'POST',
+                data:{'certificate':$certificate,'days':$days,'id':$id},
+                success:function(data){
+                    if(data=='ok'){
+                        window.location.reload()
+                        alert('借书成功')
+                    }else{
+                        window.location.reload();
+                        alert(data);
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}

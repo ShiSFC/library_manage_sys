@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block book_list %}
+    <form action="/ul/menu/borrowingLog/edit/?id={{ borrowingLog.id }}" method="post">
+        <div class="form-group" style="display:none">
+            <input class="form-control" id="id" name="id"  value="{{ borrowingLog.id }}">
+        </div>
+        <div class="form-group">
+            <p>借阅者</p>
+            <input class="form-control" name="reader" value="{{borrowingLog.reader.name}}" disabled>
+            {{ dict.error.borrowDate.0 }}
+        </div>
+        <div class="form-group">
+            <p>书籍</p>
+            <input class="form-control" name="book" value="{{borrowingLog.book.title}}" disabled>
+            {{ dict.error.borrowDate.0 }}
+        </div>
+        <div class="form-group">
+            <p>借/还书</p>
+            <select name="returned" id="returned" disabled>
+                {% if log.returned.boolean_val == True %}
+                <option value="1" selected>归还</option>
+                {% else %}
+                <option value="2">借出</option>
+                {% endif %}
+            </select>
+<!--            <input class="form-control" name="returned" value="{{borrowingLog.returned}}">-->
+            {{ dict.error.borrowDate.0 }}
+        </div>
+        <div class="form-group">
+            <p>借出日期</p>
+            <input class="form-control" name="borrowDate" value="{{borrowingLog.borrowDate|date:'Y-m-d H:i:s'}}" disabled>
+            {{ dict.error.borrowDate.0 }}
+        </div>
+        <div class="form-group">
+            <p>可借天数</p>
+            {% if data.days %}
+            <input class="form-control" name="days" value="{{data.days}}">
+            {% else %}
+            <input class="form-control" name="days" value="{{borrowingLog.days}}">
+            {% endif %}
+            {{ dict.error.days.0 }}
+        </div>
+        <div class="form-group">
+            <p>应还日期</p>
+            <input class="form-control" name="returnedDate" value="{{borrowingLog.returnedDate|date:'Y-m-d'}}" disabled>
+            {{ dict.error.returnedDate.0 }}
+        </div>
+        <div class="form-group">
+            <p>实际还书日期</p>
+            <input class="form-control" name="actualDate" value="{{borrowingLog.actualDate|date:'Y-m-d H:i:s'}}" disabled>
+            {{ dict.error.actualDate.0 }}
+        </div>
+        <input type="submit" value="修改">
+        <button id="canel"><a href="/ul/menu/borrowingLog/">取消</a></button>
+    </form>
+{% endblock %}

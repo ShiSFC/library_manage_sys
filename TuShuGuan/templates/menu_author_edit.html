@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block book_list %}
+    <form action="/ul/menu/author/edit/?id={{ obj.id }}" method="post">
+        <div class="form-group" style="display:none">
+            <input class="form-control" id="id" name="id" value="{{ obj.id }}">
+        </div>
+        <div class="form-group">
+            <p>姓名：</p>
+            <input class="form-control" name="name" value="{{obj.name}}">
+            {{obj.error.name.0}}
+        </div>
+        <div class="form-group">
+            <p>性别：</p>
+<!--            ["男","女","保密"]-->
+            <select name="sex" id="sex">
+                {% for sex in list %}
+                {% if sex == obj.sex %}
+                    <option selected value="{{ sex }}">{{ sex }}</option>
+                {% else %}
+                    <option value="{{ sex }}">{{ sex }}</option>
+                {% endif %}
+                {% endfor %}
+<!--                <option value="男">男</option>-->
+<!--                <option value="女">女</option>-->
+<!--                <option value="保密">保密</option>-->
+            </select>
+            {{obj.error.sex.0}}
+<!--            <input class="form-control" name="sex" value={{obj.sex}}>-->
+        </div>
+        <div class="form-group">
+            <p>出生：</p>
+            <input class="form-control" name="birthday" value="{{obj.birthday|date:'Y-m-d'}}">
+            {{obj.error.birthday.0}}
+        </div>
+        <div class="form-group">
+            <p>简介：</p>
+            <textarea class="form-control" name="description" id="description" cols="30" rows="10">{{obj.description}}</textarea>
+<!--            <input class="form-control" name="description" value="{{obj.description}}">-->
+            {{obj.error.description.0}}
+        </div>
+        <input type="submit" value="修改">
+        <button id="canel"><a href="/ul/menu/author/">取消</a></button>
+    </form>
+{% endblock %}

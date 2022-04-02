@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block book_list %}
+    <form action="/ul/menu/query/" method="post"  style="float:left;">
+        <p>
+            <input type="text" placeholder="请输入书名" name="title">
+            <input type="submit" class="btn btn-info" value="Search">
+        </p>
+    </form>
+    <span><a href="{% url 'reader_add' %}">
+        <button class="btn btn-primary" style="float:right; margin-right:20px">添加读者</button></a>
+    </span>
+    <table class="table table-hover">
+        <tr>
+            <th>序号</th>
+            <th>读者证号</th>
+            <th>姓名</th>
+            <th>密码</th>
+            <th>可借书籍数</th>
+            <th>已借书籍数</th>
+            <th style="text-align: center">操作</th>
+        </tr>
+        {% for reader in book_list %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ reader.certificate }}</td>
+            <td>{{ reader.name }}</td>
+            <td>{{ reader.password }}</td>
+            <td>{{ reader.availableBooks }}</td>
+            <td>{{ reader.borrowedBooks }}</td>
+            <td style="text-align: center">
+                <a href="/ul/menu/reader/edit/?id={{ reader.id }}" style="margin-right:5px"><button class="btn-info">编辑</button></a>
+                <a href="/ul/menu/reader/del/?id={{ reader.id }}" style="margin-right:5px"><button class="btn-danger">删除</button></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
+        <ul class="pagination">
+            {% if book_list.has_previous %}
+                <li><a href="/ul/menu/reader/?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li class="disabled"><a href="#">上页</a></li>
+            {% endif %}
+            {% for page in p.page_range %}
+                {% if page_number == page %}
+                    <li><a href="/ul/menu/reader/?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+                {% else %}
+                    <li><a href="/ul/menu/reader/?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
+                {% endif %}
+            {% endfor %}
+            {% if book_list.has_next %}
+                <li><a href="/ul/menu/reader/?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li class="disabled"><a href="#">下页</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}

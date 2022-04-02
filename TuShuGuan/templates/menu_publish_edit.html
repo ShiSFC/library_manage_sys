@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block book_list %}
+    <form action="/ul/menu/publish/edit/?id={{ obj.id }}" method="post">
+        <div class="form-group" style="display:none">
+            <input class="form-control" id="id" name="id"  value="{{ obj.id }}">
+        </div>
+        <div class="form-group">
+            <p>出版社名称：</p>
+            <input class="form-control" name="name" value={{obj.name}}>
+            {{obj.error.name.0}}
+        </div>
+        <div class="form-group">
+            <p>出版社地址：</p>
+            <input type="text" class="form-control" name="addr" value={{obj.addr}}>
+            {{obj.error.addr.0}}
+        </div>
+        <input type="submit" value="修改">
+        <button id="canel"><a href="/ul/menu/publish/">取消</a></button>
+    </form>
+{% endblock %}

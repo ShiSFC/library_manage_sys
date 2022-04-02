@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block book_list %}
+<form action="/ul/menu/reader/add/" method="post">
+    <div class="form-group">
+        <p>读者证号(可不填)：</p>
+        <input class="form-control" id="certificate" name="certificate" value="{{ obj.certificate }}">
+        {{ obj.error.certificate.0 }}
+    </div>
+    <div class="form-group">
+        <p>姓名：</p>
+        <input type="text" class="form-control" id="name" name="name" value="{{ obj.name }}">
+        {{ obj.error.name.0 }}
+    </div>
+    <div class="form-group">
+        <p>密码：</p>
+        <input type="text" class="form-control" id="password" name="password" value="{{ obj.password }}">
+        {{ obj.error.password.0 }}
+    </div>
+    <div class="form-group">
+        <p>可借书籍数：</p>
+        <input type="text" class="form-control" id="availableBooks" name="availableBooks" value="{{ obj.availableBooks }}">
+        {{ obj.error.availableBooks.0 }}
+    </div>
+<!--    <div class="form-group">-->
+<!--        <p>certificate：</p>-->
+<!--        <input class="form-control" id="certificate" name="certificate" value="{{ obj.certificate }}">-->
+<!--        {{ obj.error.certificate.0 }}-->
+<!--    </div>-->
+<!--    <div class="form-group">-->
+<!--        <p>价格：</p>-->
+<!--        <select name="addr" id="addr">-->
+<!--            <option value="male">男</option>-->
+<!--            <option value="female">女</option>-->
+<!--            <option value="secrecy">保密</option>-->
+<!--        </select>-->
+<!--&lt;!&ndash;        <input type="text" class="form-control" id="price" name="price">&ndash;&gt;-->
+<!--        {{ obj.addr.0 }}-->
+<!--    </div>-->
+<!--    <div class="form-group">-->
+<!--        <p>password：</p>-->
+<!--        <input type="text" class="form-control" id="password" name="password">-->
+<!--        {{ obj.error.password.0 }}-->
+<!--    </div>-->
+<!--    <div class="form-group">-->
+<!--        <p>available：</p>-->
+<!--        <input type="text" class="form-control" id="availableBooks" name="availableBooks">-->
+<!--        {{ obj.error.availableBooks.0 }}-->
+<!--    </div>-->
+<!--    <div class="form-group">-->
+<!--        <p>borrowed：</p>-->
+<!--        <input type="text" class="form-control" id="borrowedBooks" name="borrowedBooks">-->
+<!--        {{ obj.error.borrowedBooks.0 }}-->
+<!--    </div>-->
+
+    <input type="submit" value="添加">
+    <button type="button" id="canel" onclick="window.location.href='/index/'">取消</button>
+</form>
+{% endblock %}

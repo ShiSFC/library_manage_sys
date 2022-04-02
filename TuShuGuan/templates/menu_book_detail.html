@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load my_tags %}
+{% block css %}
+<style>
+    .detail .row{
+        color: white;
+        background:url('/static/dist/img/book6.jpg') repeat;
+    }
+    ul.edit li{
+        margin-top:24px;
+        float:right;
+        display:block;
+    }
+    .container{padding:0px;}
+    label{
+        color:hsla(240, 80%, 90%, 0.9);
+        width:70px;
+        font-size:16px;
+    }
+    label+span{
+        font-size:20px;
+        color:hsl(0, 100%, 90%);
+    }
+    label+p{
+        padding:5px;
+        height:240px;
+        max-width:960px;
+        overflow-y:scroll;
+        text-indent:2em;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container detail">
+<div class="row">
+    <ul class="edit">
+        <li>
+            <a href="{% url 'book_del' %}">
+            <button class="btn btn-info" style="margin-right: 100px;">删除</button>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'book_edit' %}?id={{ obj.id }}">
+            <button class="btn btn-danger" style="margin-right: 10px;">编辑</button>
+            </a>
+        </li>
+    </ul>
+<div class="col-md-10 col-md-offset-1">
+    <div>
+        <div>
+            <label>书名:</label>
+            <span style="font-size: 42px;">{{ obj.title }}</span>
+        </div>
+        <div>
+            <label>作者:</label>
+            <span>
+                {% for author in obj.author.all %}
+                    <span>{{ author.name }}
+                    {% if not forloop.last %}、{% endif %}
+                    </span>
+                {% endfor %}
+            </span>
+        </div>
+        <div>
+            <label>价格:</label>
+            <span>{{ obj.price }}</span>
+        </div>
+        <div>
+            <label>总数量:</label>
+            <span>{{ obj.totalCount }}</span>
+        </div>
+        <div>
+            <label>剩余数量:</label>
+            <span>{{ obj.totalCount|my_filter:obj.borrowCount }}</span>
+        </div>
+        <div>
+            <label>出版社:</label>
+            <span>{{ obj.publish.name }}</span>
+        </div>
+        <div>
+            <label>出版日期:</label>
+            <span>{{ obj.publishDate }}</span>
+        </div>
+        <div>
+            <label>ISBN:</label>
+            <span>{{ obj.isbn }}</span>
+        </div>
+        <div>
+            <label>分类号:</label>
+            <span>{{ obj.classification }}</span>
+        </div>
+        <div>
+            <label>入库时间:</label>
+            <span>{{ obj.enterDate }}</span>
+        </div>
+        <div>
+            <label>简介:</label>
+            <p>{{ obj.description }}</p>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

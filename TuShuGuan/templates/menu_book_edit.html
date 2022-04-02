@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block book_list %}
+<form action="/ul/menu/book/edit/?id={{ obj.id }}" method="post">
+    <div class="form-group" style="display:none">
+        <input class="form-control" id="id" name="id" value="{{ obj.id }}">
+    </div>
+    <div class="form-group">
+        <p>书名：</p>
+        <input class="form-control" id="title" name="title"  value="{{ obj.title }}">
+        {{ obj.error.title.0 }}
+    </div>
+    <div class="form-group">
+        <p>价格：</p>
+        <input type="text" class="form-control" id="price" name="price" value="{{ obj.price }}">
+        {{ obj.error.price.0 }}
+    </div>
+    <div class="form-group">
+        <p>总数量：</p>
+        <input type="text" class="form-control" id="totalCount" name="totalCount" value="{{ obj.totalCount }}">
+        {{ obj.error.totalCount.0 }}
+    </div>
+<!--    <div class="form-group">-->
+<!--        <p>借出数量：</p>-->
+<!--        <input type="text" class="form-control" id="borrowCount" name="borrowCount" value="{{ obj.borrowCount }}">-->
+<!--    </div>-->
+    <div class="form-group">
+        <p>ISBN：</p>
+        <input type="text" class="form-control" id="isbn" name="isbn" value="{{ obj.isbn }}">
+        {{ obj.error.isbn.0 }}
+    </div>
+    <div class="form-group">
+        <p>分类号：</p>
+        <input type="text" class="form-control" id="classification" name="classification" value="{{ obj.classification }}">
+        {{ obj.error.classification.0 }}
+    </div>
+    <div class="form-group">
+        <p>入库时间：</p>
+        <input type="text" class="form-control" id="enterDate" name="enterDate" value="{{ obj.enterDate|date:'Y-m-d' }}">
+        {{ obj.error.enterDate.0 }}
+    </div>
+    <div class="form-group">
+        <p>作者：</p>
+<!--        <select name="authors_id" multiple="multiple">-->
+<!--            {% for author in authors %}-->
+<!--                <option value="{{ author.id }}">{{ author.name }}</option>-->
+<!--            {% endfor %}-->
+<!--        </select>-->
+        <select name="author_id" multiple="multiple" class="form-control input-lg">
+            {% for author in authors %}
+            {% if author.id in author_list %}
+                <option selected value="{{ author.id }}">{{ author.name }}</option>
+            {% else %}
+                <option value="{{ author.id }}">{{ author.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    {{ obj.author_error }}
+    <div class="form-group">
+        <p>出版社：</p>
+<!--        <select name="publish_id">-->
+<!--            {% for publish in publish %}-->
+<!--                <option value="{{ publish.id }}">{{ publish.name }}</option>-->
+<!--            {% endfor %}-->
+<!--        </select>-->
+        <select name="publish_id" class="form-control">
+            {% for p in publishs %}
+            {% if p.id == obj.publish_id %}
+                <option selected value="{{ p.id }}">{{ p.name }}</option>
+            {% else %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endif %}
+            {% endfor %}
+        </select>
+        {{ obj.error.publish.0 }}
+    </div>
+    <div class="form-group">
+        <p>出版日期：</p>
+        <input type="text" class="form-control" id="publishDate" name="publishDate" value="{{ obj.publishDate|date:'Y-m-d' }}">
+        {{ obj.error.publishDate.0 }}
+    </div>
+<!--    <div class="form-group">-->
+<!--        <p>分类：</p>-->
+<!--        <select name="classify_id">-->
+<!--            {% for classify in classify %}-->
+<!--                <option value="{{ classify.id }}">{{ classify.category }}</option>-->
+<!--            {% endfor %}-->
+<!--        </select>-->
+<!--    </div>-->
+
+    <div class="form-group">
+        <p>简介：</p>
+        <textarea class="form-control" name="description" id="description" cols="30" rows="10">{{ obj.description }}</textarea>
+        {{ obj.error.description.0 }}
+<!--        <input type="text" class="form-control" id="description" name="description" value="{{ obj.description }}">-->
+    </div>
+    <input type="submit" value="修改">
+    <button type="button" id="canel" onclick="window.location.href='/index/'">取消</button>
+</form>
+{% endblock %}
