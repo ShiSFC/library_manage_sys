@@ -69,18 +69,18 @@
 <div class="content">
     <div class="header">
         <a href="{% url 'book_show' %}" id="system">图书馆管理系统</a>
-        <a href="/ul/menu/book/" style="margin-left: 60px;text-align:center;line-height: 48px;font-size: 20px;color: wheat">首页</a>
-        <span style="margin-left: 430px;color: wheat">欢迎您{{ request.user }}</span>
-        <a href="/logout/" style="float: right; margin-right: 20px;text-align:center;line-height: 48px;color: wheat;text-decoration: none">注销</a>
-        <a href="/set_password/" style="float: right; margin-right: 20px;text-align:center;line-height: 48px;color: wheat;text-decoration: none">修改密码</a>
+<!--        <a href="{% url 'book_show' %}" style="margin-left: 60px;text-align:center;line-height: 48px;font-size: 20px;color: wheat">首页</a>-->
+        <span style="margin-left: 430px;color: wheat">欢迎您&nbsp;&nbsp;&nbsp;&nbsp;{{ request.user }}</span>
+        <a href="/logout/" style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: wheat;text-decoration: none">注销</a>
+        <a href="/set_password/" style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: wheat;text-decoration: none">修改密码</a>
     </div>
     <div class="left">
         <ul class="title">
             <li><a href="{% url 'book_show' %}" style="text-decoration: none">书籍</a></li>
-            <li><a href="/ul/menu/author/" style="text-decoration: none">作者</a></li>
-            <li><a href="/ul/menu/publish/" style="text-decoration: none">出版社</a></li>
-            <li><a href="/ul/menu/reader/" style="text-decoration: none">读者管理</a></li>
-            <li><a href="/ul/menu/borrowingLog/" style="text-decoration: none">借阅管理</a></li>
+            <li><a href="{% url 'borrowingLog_show' %}" style="text-decoration: none">借阅管理</a></li>
+            <li><a href="{% url 'reader_show' %}" style="text-decoration: none">读者管理</a></li>
+            <li><a href="{% url 'author_show' %}" style="text-decoration: none">作者</a></li>
+            <li><a href="{% url 'publish_show' %}" style="text-decoration: none">出版社</a></li>
         </ul>
     </div>
     <div class="container" style="padding-top: 30px;height:600px;">
@@ -94,7 +94,6 @@
     {% block content %}
     {% endblock %}
 </div>
-
 </body>
 {% block js %}
 
