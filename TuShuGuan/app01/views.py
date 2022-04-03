@@ -75,7 +75,7 @@ def set_password(request):
 def book(request):
     page_number = request.GET.get("page")
     books = models.Book.objects.all()
-    p = Paginator(books, 8)
+    p = Paginator(books, 10)
     try:
         book_list = p.page(page_number)
         page_number = int(page_number)
@@ -92,7 +92,7 @@ def book(request):
 def author(request):
     page_number = request.GET.get("page")
     book_lists = models.Author.objects.all()
-    p = Paginator(book_lists, 8)
+    p = Paginator(book_lists, 10)
     try:
         book_list = p.page(page_number)
         page_number = int(page_number)
@@ -109,7 +109,7 @@ def author(request):
 def publish(request):
     page_number = request.GET.get("page")
     book_lists = models.Publish.objects.all()
-    p = Paginator(book_lists, 8)
+    p = Paginator(book_lists, 10)
     try:
         book_list = p.page(page_number)
         page_number = int(page_number)
@@ -126,7 +126,7 @@ def publish(request):
 def reader(request):
     page_number = request.GET.get("page")
     readers = models.Reader.objects.all() #.order_by('certificate')
-    p = Paginator(readers, 8)
+    p = Paginator(readers, 10)
     try:
         book_list = p.page(page_number)
         page_number = int(page_number)
@@ -141,8 +141,14 @@ def reader(request):
 
 # 借阅管理日志信息
 def borrowingLog(request):
+    # print(request.get_full_path())
     page_number = request.GET.get("page")
+    returned = request.GET.get("return")
     book_lists = models.BorrowingLog.objects.all()
+    if returned == 'f':
+        book_lists = models.BorrowingLog.objects.filter(returned=False)
+    elif returned == 't':
+        book_lists = models.BorrowingLog.objects.filter(returned=True)
     p = Paginator(book_lists, 10)
     try:
         book_list = p.page(page_number)
@@ -426,6 +432,8 @@ def book_borrow(request):
 # 归还书籍操作
 def borrowingLog_return(request):
     id = request.GET.get("id")
+    url = request.get_full_path()
+    # print(url)
     borrowingLog = models.BorrowingLog.objects.filter(id=id).first()
     book = borrowingLog.book
     reader = borrowingLog.reader
@@ -461,7 +469,7 @@ def publish_del(request):
     return redirect('/ul/menu/publish/')
 
 
-# 删除借阅记录信息
+# 删除读者信息
 def reader_del(request):
     id = request.GET.get("id")
     models.Reader.objects.filter(id=id).delete()
@@ -475,27 +483,45 @@ def borrowingLog_del(request):
     return redirect('/ul/menu/borrowingLog/')
 
 
-# 查询书籍
+# 书籍详情
+def book_detail(request):
+    id = request.GET.get('id')
+    obj = models.Book.objects.get(id=id)
+    # authors = obj.author.all()
+    # print(authors)
+    return render(request, 'menu_book_detail.html', locals())
+
+
 TITLE = {}
+# 查询书籍
 def book_query(request):
     global TITLE
     title = ''
     if request.method == 'POST':
-        title = request.POST.get('title')
+        title = request.POST.get('title').strip(' ')
         if title:
             TITLE['book'] = title
         else:
-            return redirect('/ul/menu/book/')
+            return redirect('book_show')
     else:
-        title = TITLE.book
+        title = TITLE['book']
     page_number = request.GET.get("page")
-    books1 = models.Book.objects.filter(title__icontains=title)
-    # books = models.Book.objects.filter(publish_id__in=[title])
-    books2 = models.Book.objects.filter(price__icontains=title)
-    books = books1 | books2
-
-    print(books)
-    p = Paginator(books, 8)
+    books = models.Book.objects.filter(title__icontains=title)
+    # 多对一查询
+    publishs = models.Publish.objects.filter(name__icontains=title)
+    for publish in publishs:
+        books2 = publish.book_set.all()
+        books = books | books2
+    # 多对多查询
+    authors = models.Author.objects.filter(name__icontains=title)
+    for author in authors:
+        books3 = author.book_set.all()
+        books = books | books3
+    # 去重
+    books = books.distinct()
+    # books = list(set(books))
+    # print(books)
+    p = Paginator(books, 10)
     try:
         book_list = p.page(page_number)
         page_number = int(page_number)
@@ -505,12 +531,171 @@ def book_query(request):
     except PageNotAnInteger:
         book_list = p.page(1)
         page_number = 1
-    return render(request, 'query.html', locals())
+    return render(request, 'menu_book_query.html', locals())
 
 
-def book_detail(request):
-    id = request.GET.get('id')
-    obj = models.Book.objects.get(id=id)
-    # authors = obj.author.all()
-    # print(authors)
-    return render(request, 'menu_book_detail.html', locals())
+# 查询作者
+def author_query(request):
+    global TITLE
+    title = ''
+    if request.method == 'POST':
+        title = request.POST.get('author').strip(' ')
+        if title:
+            TITLE['author'] = title
+        else:
+            return redirect('author_show')
+    else:
+        print(TITLE)
+        title = TITLE['author']
+    page_number = request.GET.get("page")
+    authors = models.Author.objects.filter(name__icontains=title)
+    print(authors)
+    p = Paginator(authors, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'menu_author_query.html', locals())
+
+
+# 查询出版社
+def publish_query(request):
+    global TITLE
+    title = ''
+    if request.method == 'POST':
+        title = request.POST.get('publish').strip(' ')
+        if title:
+            TITLE['publish'] = title
+        else:
+            return redirect('publish_show')
+    else:
+        title = TITLE['publish']
+    page_number = request.GET.get("page")
+    publishs = models.Publish.objects.filter(name__icontains=title)
+    p = Paginator(publishs, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'menu_publish_query.html', locals())
+
+
+# 查询读者
+def reader_query(request):
+    global TITLE
+    title = ''
+    if request.method == 'POST':
+        title = request.POST.get('reader').strip(' ')
+        if title:
+            TITLE['reader'] = title
+        else:
+            return redirect('reader_show')
+    else:
+        title = TITLE['reader']
+    page_number = request.GET.get("page")
+    readers = models.Reader.objects.filter(name__icontains=title)
+    if re.match('^[0-9]{10}$', title):
+        reader = models.Reader.objects.filter(certificate=title)
+        readers = readers | reader
+    readers = list(set(readers))
+    # print(readers)
+    p = Paginator(readers, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'menu_reader_query.html', locals())
+
+
+# 查询借阅信息
+def borrowingLog_query(request):
+    global TITLE
+    title = ''
+    if request.method == 'POST':
+        title = request.POST.get('borrowingLog')
+        if title:
+            TITLE['borrowingLog'] = title
+        else:
+            return redirect('borrowingLog_query')
+    else:
+        title = TITLE['borrowingLog']
+    page_number = request.GET.get("page")
+    borrowing_logs = models.BorrowingLog.objects.filter()
+    print(borrowing_logs)
+    borrowing_logs = borrowing_logs.none()
+    print(borrowing_logs)
+
+    # 借阅者搜素
+    readers = models.Reader.objects.filter(name__icontains=title)
+    if re.match('^[0-9]{10}$', title):
+        reader = models.Reader.objects.filter(certificate=title)
+        readers = readers | reader
+    for reader in readers:
+        log = reader.borrowinglog_set.all()
+        borrowing_logs = borrowing_logs | log
+
+    # 书籍搜索
+    books = models.Book.objects.filter(title__icontains=title)
+    for book in books:
+        log = book.borrowinglog_set.all()
+        borrowing_logs = borrowing_logs | log
+
+    # borrowing_logs.distinct().order_by('name')
+    # borrowing_logs = list(set(borrowing_logs))
+    print(borrowing_logs)
+    p = Paginator(borrowing_logs, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'menu_borrowingLog_query.html', locals())
+
+
+# 查询借阅信息
+def borrowingLog_query_not_return(request):
+    # global TITLE
+    # title = ''
+    # if request.method == 'POST':
+    #     title = request.POST.get('borrowingLog')
+    #     if title:
+    #         TITLE['borrowingLog'] = title
+    #     else:
+    #         return redirect('borrowingLog_query')
+    # else:
+    #     title = TITLE['borrowingLog']
+    page_number = request.GET.get("page")
+    borrowing_logs = models.BorrowingLog.objects.filter(returned=False)
+    print(borrowing_logs)
+    # borrowing_logs = borrowing_logs.none()
+    # print(borrowing_logs)
+    p = Paginator(borrowing_logs, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'menu_borrowingLog.html', locals())

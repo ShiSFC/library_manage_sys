@@ -32,24 +32,26 @@
                 <a href="{% url 'reader_del' %}?id={{ reader.id }}" style="margin-right:5px"><button class="btn-danger">删除</button></a>
             </td>
         </tr>
+        {% empty %}
+        <td colspan="5"><h1>抱歉没有搜索结果。。。</h1></td>
         {% endfor %}
     </table>
     <nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
         <ul class="pagination">
             {% if book_list.has_previous %}
-                <li><a href="{% url 'reader_show' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
+                <li><a href="{% url 'reader_query' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
             {% else %}
                 <li class="disabled"><a href="#">上页</a></li>
             {% endif %}
             {% for page in p.page_range %}
                 {% if page_number == page %}
-                    <li><a href="{% url 'reader_show' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+                    <li><a href="{% url 'reader_query' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
                 {% else %}
-                    <li><a href="{% url 'reader_show' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
+                    <li><a href="{% url 'reader_query' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
                 {% endif %}
             {% endfor %}
             {% if book_list.has_next %}
-                <li><a href="{% url 'reader_show' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
+                <li><a href="{% url 'reader_query' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
             {% else %}
                 <li class="disabled"><a href="#">下页</a></li>
             {% endif %}

@@ -6,12 +6,6 @@
             <input type="submit" class="btn btn-info" value="Search">
         </p>
     </form>
-    <span><a href="{% url 'borrowingLog_show' %}?return=t">
-        <button class="btn btn-info" style="float:right; margin-right:20px">查看归还记录</button></a>
-    </span>
-    <span><a href="{% url 'borrowingLog_show' %}?return=f">
-        <button class="btn btn-info" style="float:right; margin-right:20px">查看未归还记录</button></a>
-    </span>
     <table class="table table-hover">
         <tr>
             <th>序号</th>
@@ -49,46 +43,39 @@
         {% endfor %}
     </table>
     <nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
-        {% if returned == 'f' %}
-        <ul class="pagination">
+    <ul class="pagination">
         {% if book_list.has_previous %}
-            <li><a href="{% url 'borrowingLog_show' %}?page={{ book_list.previous_page_number }}&return=f">上页<span class="sr-only">(current)</span></a></li>
+            <li><a href="{% url 'borrowingLog_query' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
         {% else %}
             <li class="disabled"><a href="#">上页</a></li>
         {% endif %}
         {% for page in p.page_range %}
             {% if page_number == page %}
-                <li><a href="{% url 'borrowingLog_show' %}?page={{ page }}&return=f" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+                <li><a href="{% url 'borrowingLog_query' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
             {% else %}
-                <li><a href="{% url 'borrowingLog_show' %}?page={{ page }}&return=f">{{ page }}<span class="sr-only">(current)</span></a></li>
+                <li><a href="{% url 'borrowingLog_query' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
             {% endif %}
         {% endfor %}
         {% if book_list.has_next %}
-            <li><a href="{% url 'borrowingLog_show' %}?page={{ book_list.next_page_number }}&return=f">下页<span class="sr-only">(current)</span></a></li>
+            <li><a href="{% url 'borrowingLog_query' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
         {% else %}
             <li class="disabled"><a href="#">下页</a></li>
         {% endif %}
     </ul>
-        {% else %}
-        <ul class="pagination">
-        {% if book_list.has_previous %}
-            <li><a href="{% url 'borrowingLog_show' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
-        {% else %}
-            <li class="disabled"><a href="#">上页</a></li>
-        {% endif %}
-        {% for page in p.page_range %}
-            {% if page_number == page %}
-                <li><a href="{% url 'borrowingLog_show' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
-            {% else %}
-                <li><a href="{% url 'borrowingLog_show' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
-            {% endif %}
-        {% endfor %}
-        {% if book_list.has_next %}
-            <li><a href="{% url 'borrowingLog_show' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
-        {% else %}
-            <li class="disabled"><a href="#">下页</a></li>
-        {% endif %}
-    </ul>
-        {% endif %}
     </nav>
+{% endblock %}
+
+{% block js %}
+<!--    <script>-->
+<!--        $('#add_borrowingLog').click(function(){-->
+<!--            var $borrowingLog= $('[name=category]').val();-->
+<!--            $ .ajax({-->
+<!--                url:'/ul/menu/borrowingLog/add/',-->
+<!--                type:'POST',-->
+<!--                data:{'borrowingLog':$borrowingLog},-->
+<!--                success:function(data){-->
+<!--                if(data=='ok'){ window.location.reload() } }-->
+<!--            })-->
+<!--        })-->
+<!--    </script>-->
 {% endblock %}

@@ -3,14 +3,13 @@
 {% block book_list %}
     <form action="{% url 'book_query' %}" method="post"  style="float:left;">
         <p>
-            <input type="text" placeholder="请输入书名" name="title">
+            <input type="text" placeholder="可输入书名、作者、出版社" name="title">
             <input type="submit" class="btn btn-info" value="Search">
         </p>
     </form>
     <span><a href="{% url 'book_add' %}">
-        <button class="btn btn-info" style="float:right; margin-right:20px">添加</button></a>
+        <button class="btn btn-primary" style="float:right; margin-right:20px">添加书籍</button></a>
     </span>
-
     <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
     <div class="modal-content">
