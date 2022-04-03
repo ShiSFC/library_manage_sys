@@ -37,6 +37,7 @@
             position:absolute;
             top:60px;
             left:160px;
+            padding:0px;
 <!--            margin-left: 160px;-->
         }
         ul{
@@ -45,9 +46,9 @@
         ul.title li{
             font-size:16px;
             padding-top: 80px;
-            color:
         }
          #system{
+             margin-left: 22px;
              text-shadow: 2px 2px 2px deepskyblue;
              text-align:center;
              line-height: 58px;
@@ -60,7 +61,14 @@
          .table{
             margin-bottom:70px;
          }
-
+        .row{
+            padding-top:30px;
+            margin-left:0px;
+            margin-right:0px;
+        }
+        .col-md-9 button{
+            margin-bottom:20px;
+        }
     </style>
     {% block css %}
     {% endblock %}
@@ -83,7 +91,7 @@
             <li><a href="{% url 'publish_show' %}" style="text-decoration: none">出版社</a></li>
         </ul>
     </div>
-    <div class="container" style="padding-top: 30px;height:600px;">
+    <div class="container" style="min-height:600px;">
         <div class="row">
             <div class="col-md-9 col-md-offset-1">
                 {% block book_list %}

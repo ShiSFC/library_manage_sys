@@ -53,7 +53,7 @@ class Book(SaveModel):
     isbn = models.CharField(max_length=13, validators=[RegexValidator(r'^97[89][0-9]{10}$', "请填写正确的ISBN")])
     classification = models.CharField(max_length=32)  # 分类号
     enterDate = models.DateField()  # default=datetime.date.today() # 入库时间
-    publish = models.ForeignKey('Publish', null=True, blank=True, on_delete=models.SET_NULL)
+    publish = models.ForeignKey('Publish', on_delete=models.PROTECT)
     author = models.ManyToManyField('Author')
 
 

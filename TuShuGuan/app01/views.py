@@ -3,6 +3,8 @@ import re
 
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db import IntegrityError
+from django.db.models import ProtectedError
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
@@ -450,46 +452,66 @@ def borrowingLog_return(request):
 
 # 删除书籍
 def book_del(request):
-    book_id = request.GET.get('id')
-    models.Book.objects.filter(id=book_id).delete()
-    return redirect('/ul/menu/book/')
+    try:
+        book_id = request.GET.get('id')
+        models.Book.objects.filter(id=book_id).delete()
+        return redirect('/ul/menu/book/')
+    except IntegrityError:
+        return HttpResponse('不可删除')
 
 
 # 删除作者信息
 def author_del(request):
-    id = request.GET.get("id")
-    models.Author.objects.filter(id=id).delete()
-    return redirect('/ul/menu/author/')
+    try:
+        id = request.GET.get("id")
+        models.Author.objects.filter(id=id).delete()
+        return redirect('/ul/menu/author/')
+    except IntegrityError:
+        return HttpResponse('不可删除')
 
 
 # 删除出版社信息
 def publish_del(request):
-    id = request.GET.get("id")
-    models.Publish.objects.filter(id=id).delete()
-    return redirect('/ul/menu/publish/')
+    try:
+        id = request.GET.get("id")
+        models.Publish.objects.filter(id=id).delete()
+        return redirect('/ul/menu/publish/')
+    except IntegrityError:
+        return HttpResponse('不可删除')
 
 
 # 删除读者信息
 def reader_del(request):
-    id = request.GET.get("id")
-    models.Reader.objects.filter(id=id).delete()
-    return redirect('/ul/menu/reader/')
+    try:
+        id = request.GET.get("id")
+        models.Reader.objects.filter(id=id).delete()
+        return redirect('/ul/menu/reader/')
+    except IntegrityError:
+        return HttpResponse('不可删除')
 
 
 # 删除借阅记录信息
 def borrowingLog_del(request):
-    id = request.GET.get("id")
-    models.BorrowingLog.objects.filter(id=id).delete()
-    return redirect('/ul/menu/borrowingLog/')
+    try:
+        id = request.GET.get("id")
+        models.BorrowingLog.objects.filter(id=id).delete()
+        return redirect('/ul/menu/borrowingLog/')
+    except IntegrityError:
+        return HttpResponse('不可删除')
 
 
 # 书籍详情
 def book_detail(request):
     id = request.GET.get('id')
-    obj = models.Book.objects.get(id=id)
-    # authors = obj.author.all()
-    # print(authors)
-    return render(request, 'menu_book_detail.html', locals())
+    obj = models.Book.objects.filter(id=id).first()
+    if obj:
+        logs = obj.borrowinglog_set.filter(returned=False)
+        # authors = obj.author.all()
+        # print(authors)
+        return render(request, 'menu_book_detail.html', locals())
+    # except ValueError as e:
+    else:
+        return HttpResponse('该书籍不存在！')
 
 
 TITLE = {}
