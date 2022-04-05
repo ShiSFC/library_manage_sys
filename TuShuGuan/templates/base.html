@@ -56,7 +56,7 @@
 <!--             display:block;-->
              width:160px;
              height:60px;
-             background-color: whitesmoke;
+<!--             background-color: whitesmoke;-->
          }
          .table{
             margin-bottom:70px;
@@ -66,9 +66,9 @@
             margin-left:0px;
             margin-right:0px;
         }
-        .col-md-9 button{
-            margin-bottom:20px;
-        }
+<!--        .col-md-9 button{-->
+<!--            margin-bottom:20px;-->
+<!--        }-->
     </style>
     {% block css %}
     {% endblock %}
@@ -78,9 +78,9 @@
     <div class="header">
         <a href="{% url 'book_show' %}" id="system">图书馆管理系统</a>
 <!--        <a href="{% url 'book_show' %}" style="margin-left: 60px;text-align:center;line-height: 48px;font-size: 20px;color: wheat">首页</a>-->
-        <span style="margin-left: 430px;color: wheat">欢迎您&nbsp;&nbsp;&nbsp;&nbsp;{{ request.user }}</span>
-        <a href="/logout/" style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: wheat;text-decoration: none">注销</a>
-        <a href="/set_password/" style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: wheat;text-decoration: none">修改密码</a>
+        <a href="{% url 'logout' %}" style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: wheat;text-decoration: none"><button class="btn btn-danger">注销</button></a>
+        <a href="/set_password/" style="float: right; margin-right: 20px;text-align:center;line-height:60px;color: wheat;text-decoration: none"><button class="btn btn-info">修改密码</button></a>
+        <span style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: deepskyblue">欢迎您&nbsp;&nbsp;{{ request.user }}</span>
     </div>
     <div class="left">
         <ul class="title">

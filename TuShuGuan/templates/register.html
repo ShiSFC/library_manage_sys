@@ -23,6 +23,7 @@
     <div class="row" id="form">
         <div class="col-md-offset-9">
             <form action="/regist/" method="post">
+            {% csrf_token %}
                 <div class="form-group">
                     {{ obj.username }}{{ obj.errors.username.0 }}{{ obj.error_message }}
                 </div>

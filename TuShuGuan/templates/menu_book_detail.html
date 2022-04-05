@@ -26,7 +26,7 @@
         padding:5px;
         height:240px;
         max-width:960px;
-        overflow-y:scroll;
+        overflow-y:auto;
         text-indent:2em;
         color:hsla(240, 80%, 90%, 0.9);
     }
@@ -35,19 +35,19 @@
 {% block content %}
 <div class="container detail">
 <div class="row">
-<ul class="edit">
-    <li>
-        <a href="{% url 'book_del' %}">
-        <button class="btn btn-info" style="margin-right: 100px;">删除</button>
-        </a>
-    </li>
-    <li>
-        <a href="{% url 'book_edit' %}?id={{ obj.id }}">
-        <button class="btn btn-danger" style="margin-right: 10px;">编辑</button>
-        </a>
-    </li>
-</ul>
-<div class="col-md-10 col-md-offset-1">
+<!--<ul class="edit">-->
+<!--    <li>-->
+<!--        <a href="{% url 'book_del' %}">-->
+<!--        <button class="btn btn-info" style="margin-right: 100px;">删除</button>-->
+<!--        </a>-->
+<!--    </li>-->
+<!--    <li>-->
+<!--        <a href="{% url 'book_edit' %}?id={{ obj.id }}">-->
+<!--        <button class="btn btn-danger" style="margin-right: 10px;">编辑</button>-->
+<!--        </a>-->
+<!--    </li>-->
+<!--</ul>-->
+<div class="col-md-10 col-md-offset-1" style="margin-top:20px;">
     <div>
         <label>书名:</label>
         <span style="font-size: 42px;">{{ obj.title }}</span>
@@ -96,8 +96,9 @@
     </div>
     <div>
         <label>简介:</label>
-        <p>{{ obj.description }}</p>
+        <p>{{ obj.description|default:'无' }}</p>
     </div>
+    {% if request..session.islogin %}
     <div style="margin-top:20px;color:hsl(0, 100%, 90%);">
         <table class="table" border="5">
             {% for log in logs %}
@@ -119,6 +120,7 @@
             {% endfor %}
         </table>
     </div>
+    {% endif %}
 </div>
 </div>
 </div>

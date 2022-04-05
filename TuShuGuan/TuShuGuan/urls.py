@@ -19,11 +19,13 @@ from django.urls import path, include
 from app01.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
-
+    # path('admin/', admin.site.urls),
     path('regist/', register),  # 图书馆注册页面
-    path('login/', login),  # 图书馆登录页面
+    path('login/', login, name='login'),  # 图书馆登录页面
+    path('check_pwd/', login_check, name='check_pwd'),   # 检查密码
+    path('logout/', logout, name='logout'),
+    path('index/', index, name='index'),   # 首页
+    path('index/query/', index_query, name='index_query'),   # 首页查询
     path('set_password/', set_password),  # 图书馆重置密码页面
     path('ul/', include('app01.urls')),
 ]

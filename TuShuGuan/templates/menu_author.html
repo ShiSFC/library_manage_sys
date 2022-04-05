@@ -15,6 +15,7 @@
 {% endblock %}
 {% block book_list %}
 <form action="{% url 'author_query' %}" method="post"  style="float:left">
+                {% csrf_token %}
     <p>
         <input type="text" placeholder="请输入作者名" name="author">
         <input type="submit" class="btn btn-info" value="Search">
@@ -116,10 +117,14 @@
 
             $.ajax({
                 url:'/ul/menu/author/add/',
-                type:'POST',
+                type:'GET',
                 data:{'name':$name,'sex':$sex,'age':$age,'university':$university},
                 success:function(data){
-                if(data=='ok'){ window.location.reload() } }
+                    if(data=='ok'){
+                        window.location.reload()
+                        alert('添加成功')
+                    }
+                }
             })
         })
     </script>

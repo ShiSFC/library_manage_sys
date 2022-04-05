@@ -15,6 +15,19 @@ from app01 import models
 from app01.models import Regist, Log_in
 
 
+def login_required(view_func):
+    '''登录判断装饰器'''
+    def wrapper(request, *view_args, **view_kwargs):
+        # 判断用户是否登录
+        if request.session.has_key('islogin') and request.session['islogin']:
+            # 用户已登录,调用对应的视图
+            return view_func(request, *view_args, **view_kwargs)
+        else:
+            # 用户未登录,跳转到登录页
+            return redirect('/login')
+    return wrapper
+
+
 # 注册
 def register(request):
     if request.method == 'GET':
@@ -38,26 +51,141 @@ def register(request):
 
 # 登录
 def login(request):
-    if request.method == 'GET':
+    # 判断用户是否登录
+    if request.session.has_key('islogin') and request.session['islogin']:
+        # 用户已登录, 跳转到修改密码页面
+        return redirect('book_show')
+    else:
+        # 用户未登录
+        # 获取cookie username
+        # if 'username' in request.COOKIES:
+        #     # 获取记住的用户名
+        #     username = request.COOKIES['username']
+        # else:
+        #     username = ''
         obj = Log_in()
         return render(request, 'login.html', {'obj': obj})
-    else:
-        obj = Log_in(request.POST)
-        if obj.is_valid():
-            data = obj.cleaned_data
-            user = auth.authenticate(username=data.get('user'),
-                                     password=data.get('pwd'))
-            if user:
-                auth.login(request, user)
-                return redirect('/ul/menu/book/')
-            else:
-                obj.error_message = '用户名或密码错误'
-                return render(request, 'login.html', {'obj': obj})
+        # return render(request, 'booktest/login.html', {'username': username})
+    # if request.method == 'GET':
+    #     obj = Log_in()
+    #     return render(request, 'login.html', {'obj': obj})
+    # else:
+    #     obj = Log_in(request.POST)
+    #     if obj.is_valid():
+    #         data = obj.cleaned_data
+    #         user = auth.authenticate(username=data.get('user'),
+    #                                  password=data.get('pwd'))
+    #         if user:
+    #             auth.login(request, user)
+    #             return redirect('/ul/menu/book/')
+    #         else:
+    #             obj.error_message = '用户名或密码错误'
+    #             return render(request, 'login.html', {'obj': obj})
+    #     else:
+    #         return render(request, 'login.html', {'obj': obj})
+
+
+def login_check(request):
+    '''登录校验视图'''
+    obj = Log_in(request.POST)
+    # remember = request.POST.get('remember')
+    # print(remember)
+    if obj.is_valid():
+        data = obj.cleaned_data
+        user = auth.authenticate(username=data.get('user'),
+                                 password=data.get('pwd'))
+        if user:
+            auth.login(request, user)
+            response = redirect('book_show')
+            # # 判断是否需要记住用户名
+            # if remember == 'on':
+            # 设置cookie username，过期时间1周
+            #     username = data.get('user')
+            #     response.set_cookie('user', username, max_age=7*24*3600)
+            # 记住登录的用户名
+            # request.session['username'] = username
+
+            # 记住用户登录状态
+            # 通过session可以在应用程序的web页面间进行跳转时，保存用户的状态，使得整个用户会话一直存在下去，直到浏览器关闭。
+            # 只有session中有islogin,就认为用户已登录
+            request.session['islogin'] = True
+
+            # 返回应答
+            return response
         else:
-            return render(request, 'login.html', {'obj': obj})
+            obj.error_message = '用户名或密码错误'
+            # return render(request, 'login.html', {'obj': obj})
+    return render(request, 'login.html', {'obj': obj})
+
+
+# 注销
+def logout(request):
+    auth.logout(request)
+    request.session['islogin'] = False
+    return redirect('index')
+
+
+# 未登录时可查看书籍
+def index(request):
+    page_number = request.GET.get("page")
+    books = models.Book.objects.all()
+    p = Paginator(books, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'index.html', locals())
+
+
+TITLE = {}
+# 查询书籍
+def index_query(request):
+    global TITLE
+    title = ''
+    if request.method == 'POST':
+        title = request.POST.get('title').strip(' ')
+        if title:
+            TITLE['index'] = title
+        else:
+            return redirect('index')
+    else:
+        title = TITLE['index']
+    page_number = request.GET.get("page")
+    books = models.Book.objects.filter(title__icontains=title)
+    # 多对一查询
+    publishs = models.Publish.objects.filter(name__icontains=title)
+    for publish in publishs:
+        books2 = publish.book_set.all()
+        books = books | books2
+    # 多对多查询
+    authors = models.Author.objects.filter(name__icontains=title)
+    for author in authors:
+        books3 = author.book_set.all()
+        books = books | books3
+    # 去重
+    books = books.distinct()
+    # books = list(set(books))
+    # print(books)
+    p = Paginator(books, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'index_query.html', locals())
 
 
 # 重置密码
+@login_required
 def set_password(request):
     if request.method == 'GET':
         return render(request, 'set_password.html')
@@ -68,12 +196,14 @@ def set_password(request):
         if user.check_password(oldpwd):
             user.set_password(newpwd)
             user.save()
+            request.session['islogin'] = False
             return redirect('/login/')
         else:
             return render(request, 'set_password.html')
 
 
 # 书籍信息
+@login_required
 def book(request):
     page_number = request.GET.get("page")
     books = models.Book.objects.all()
@@ -91,6 +221,7 @@ def book(request):
 
 
 # 作者信息
+@login_required
 def author(request):
     page_number = request.GET.get("page")
     book_lists = models.Author.objects.all()
@@ -108,6 +239,7 @@ def author(request):
 
 
 # 出版社信息
+@login_required
 def publish(request):
     page_number = request.GET.get("page")
     book_lists = models.Publish.objects.all()
@@ -125,6 +257,7 @@ def publish(request):
 
 
 # 读者信息
+@login_required
 def reader(request):
     page_number = request.GET.get("page")
     readers = models.Reader.objects.all() #.order_by('certificate')
@@ -142,6 +275,7 @@ def reader(request):
 
 
 # 借阅管理日志信息
+@login_required
 def borrowingLog(request):
     # print(request.get_full_path())
     page_number = request.GET.get("page")
@@ -165,6 +299,7 @@ def borrowingLog(request):
 
 
 # 添加书籍
+@login_required
 def book_add(request):
     if request.method == 'GET':
         obj = {}
@@ -177,6 +312,8 @@ def book_add(request):
         print(obj)
         if("author_id" in obj):
             obj.pop("author_id")
+        if ("csrfmiddlewaretoken" in obj):
+            obj.pop("csrfmiddlewaretoken")
         book = models.Book.objects.create(**obj)
         flag = book.save()
         author_id = request.POST.getlist('author_id')
@@ -201,11 +338,12 @@ def book_add(request):
 
 
 # 添加作者
+@login_required
 def author_add(request):
-    name = request.POST.get("name").strip(' ')
-    sex = request.POST.get("sex")
-    birthday = request.POST.get("birthday")
-    description = request.POST.get("description")
+    name = request.GET.get("name").strip(' ')
+    sex = request.GET.get("sex")
+    birthday = request.GET.get("birthday")
+    description = request.GET.get("description")
     author = models.Author(name=name, sex=sex, birthday=birthday, description=description)
     obj = author.save()
     if(not obj):
@@ -213,9 +351,10 @@ def author_add(request):
 
 
 # 添加出版社
+@login_required
 def publish_add(request):
-    name = request.POST.get("name").strip(' ')
-    addr = request.POST.get("addr")
+    name = request.GET.get("name").strip(' ')
+    addr = request.GET.get("addr")
     publish = models.Publish(name=name, addr=addr)
     obj = publish.save()
     # obj = models.Publish.objects.create(**data)
@@ -224,6 +363,7 @@ def publish_add(request):
 
 
 # 添加读者信息
+@login_required
 def reader_add(request):
     if request.method == 'GET':
         obj = models.Reader.objects.all()
@@ -244,6 +384,7 @@ def reader_add(request):
 
 
 # 编辑书籍
+@login_required
 def book_edit(request):
     if request.method == 'GET':
         book_id = request.GET.get('id')
@@ -257,6 +398,8 @@ def book_edit(request):
     else:
         book_id = request.GET.get('id')
         obj = request.POST.dict()
+        if ("csrfmiddlewaretoken" in obj):
+            obj.pop("csrfmiddlewaretoken")
         for key in obj.keys():
             obj[key] = obj[key].strip(' ')
         print(obj)
@@ -288,6 +431,7 @@ def book_edit(request):
 
 
 # 编辑作者信息
+@login_required
 def author_edit(request):
     if request.method == 'GET':
         id = request.GET.get('id')
@@ -298,6 +442,8 @@ def author_edit(request):
     else:
         id = request.GET.get('id')
         obj = request.POST.dict()
+        if ("csrfmiddlewaretoken" in obj):
+            obj.pop("csrfmiddlewaretoken")
         for key in obj.keys():
             obj[key] = obj[key].strip(' ')
         author = models.Author.objects.filter(id=id).first()
@@ -312,6 +458,7 @@ def author_edit(request):
 
 
 # 编辑出版社信息
+@login_required
 def publish_edit(request):
     if request.method == 'GET':
         id = request.GET.get('id')
@@ -320,6 +467,8 @@ def publish_edit(request):
     else:
         id = request.GET.get('id')
         obj = request.POST.dict()
+        if ("csrfmiddlewaretoken" in obj):
+            obj.pop("csrfmiddlewaretoken")
         for key in obj.keys():
             obj[key] = obj[key].strip(' ')
         publish = models.Publish.objects.filter(id=id).first()
@@ -333,6 +482,7 @@ def publish_edit(request):
 
 
 # 编辑读者信息
+@login_required
 def reader_edit(request):
     if request.method == 'GET':
         id = request.GET.get('id')
@@ -341,6 +491,8 @@ def reader_edit(request):
     else:
         id = request.GET.get('id')
         obj = request.POST.dict()
+        if ("csrfmiddlewaretoken" in obj):
+            obj.pop("csrfmiddlewaretoken")
         for key in obj.keys():
             obj[key] = obj[key].strip(' ')
         reader = models.Reader.objects.filter(id=id).first()
@@ -355,6 +507,7 @@ def reader_edit(request):
 
 
 # 编辑借阅管理日志
+@login_required
 def borrowingLog_edit(request):
     if request.method == 'GET':
         id = request.GET.get('id')
@@ -364,6 +517,8 @@ def borrowingLog_edit(request):
         dict = {}
         id = request.GET.get('id')
         data = request.POST.dict()
+        if ("csrfmiddlewaretoken" in data):
+            data.pop("csrfmiddlewaretoken")
         print(data)
         for key in list(data.keys()):
             if not data[key].strip(' '):
@@ -381,10 +536,11 @@ def borrowingLog_edit(request):
 
 
 # 借书操作
+@login_required
 def book_borrow(request):
-    id = request.POST.get('id')
-    certificate = request.POST.get("certificate").strip(' ')
-    days = request.POST.get("days").strip(' ')
+    id = request.GET.get('id')
+    certificate = request.GET.get("certificate").strip(' ')
+    days = request.GET.get("days").strip(' ')
     # days = re.match('/^[0-9]+$/',days)
     str = ''
     try:
@@ -395,7 +551,7 @@ def book_borrow(request):
     # print(days)
 
     if id and certificate and days:
-        print('1')
+        # print('1')
         book = models.Book.objects.filter(id=id).first()
         reader = models.Reader.objects.filter(certificate=certificate).first()
         if book:
@@ -403,14 +559,14 @@ def book_borrow(request):
             borrowCount = book.borrowCount
             if totalCount > borrowCount:
                 if reader:
-                    print('2')
+                    # print('2')
                     availableBooks = reader.availableBooks
                     borrowedBooks = reader.borrowedBooks
                     if availableBooks > borrowedBooks:
                         borrowingLog = models.BorrowingLog.objects.create(book=book, reader=reader, days=days)
                         flag = isinstance(borrowingLog, models.BorrowingLog)
                         if flag:
-                            print('3')
+                            # print('3')
                             reader.__dict__.update(borrowedBooks=borrowedBooks+1)
                             reader.save()
                             book.__dict__.update(borrowCount=borrowCount+1)
@@ -432,9 +588,10 @@ def book_borrow(request):
 
 
 # 归还书籍操作
+@login_required
 def borrowingLog_return(request):
     id = request.GET.get("id")
-    url = request.get_full_path()
+    # url = request.get_full_path()
     # print(url)
     borrowingLog = models.BorrowingLog.objects.filter(id=id).first()
     book = borrowingLog.book
@@ -451,6 +608,7 @@ def borrowingLog_return(request):
 
 
 # 删除书籍
+@login_required
 def book_del(request):
     try:
         book_id = request.GET.get('id')
@@ -461,6 +619,7 @@ def book_del(request):
 
 
 # 删除作者信息
+@login_required
 def author_del(request):
     try:
         id = request.GET.get("id")
@@ -471,6 +630,7 @@ def author_del(request):
 
 
 # 删除出版社信息
+@login_required
 def publish_del(request):
     try:
         id = request.GET.get("id")
@@ -481,6 +641,7 @@ def publish_del(request):
 
 
 # 删除读者信息
+@login_required
 def reader_del(request):
     try:
         id = request.GET.get("id")
@@ -491,6 +652,7 @@ def reader_del(request):
 
 
 # 删除借阅记录信息
+@login_required
 def borrowingLog_del(request):
     try:
         id = request.GET.get("id")
@@ -501,6 +663,7 @@ def borrowingLog_del(request):
 
 
 # 书籍详情
+@login_required
 def book_detail(request):
     id = request.GET.get('id')
     obj = models.Book.objects.filter(id=id).first()
@@ -514,8 +677,8 @@ def book_detail(request):
         return HttpResponse('该书籍不存在！')
 
 
-TITLE = {}
 # 查询书籍
+@login_required
 def book_query(request):
     global TITLE
     title = ''
@@ -557,6 +720,7 @@ def book_query(request):
 
 
 # 查询作者
+@login_required
 def author_query(request):
     global TITLE
     title = ''
@@ -586,6 +750,7 @@ def author_query(request):
 
 
 # 查询出版社
+@login_required
 def publish_query(request):
     global TITLE
     title = ''
@@ -613,6 +778,7 @@ def publish_query(request):
 
 
 # 查询读者
+@login_required
 def reader_query(request):
     global TITLE
     title = ''
@@ -645,6 +811,7 @@ def reader_query(request):
 
 
 # 查询借阅信息
+@login_required
 def borrowingLog_query(request):
     global TITLE
     title = ''
@@ -694,6 +861,7 @@ def borrowingLog_query(request):
 
 
 # 查询借阅信息
+@login_required
 def borrowingLog_query_not_return(request):
     # global TITLE
     # title = ''

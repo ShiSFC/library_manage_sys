@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block book_list %}
     <form action="{% url 'borrowingLog_query' %}" method="post"  style="float:left">
+                {% csrf_token %}
         <p>
             <input type="text" placeholder="可输入借阅者、书籍" name="borrowingLog">
             <input type="submit" class="btn btn-info" value="Search">

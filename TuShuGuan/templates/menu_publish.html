@@ -2,6 +2,7 @@
 {% block book_list %}
 
 <form action="{% url 'publish_query' %}" method="post"  style="float:left">
+                {% csrf_token %}
     <p>
         <input type="text" placeholder="请输入出版社名" name="publish">
         <input type="submit" class="btn btn-info" value="Search">
@@ -21,6 +22,7 @@
             </div>
             <div class="modal-body">
                 <form>
+                {% csrf_token %}
                     <div class="form-group">
                         <input type="text" class="form-control" placeholder="出版社" name="name">
                     </div>
@@ -84,7 +86,7 @@
             var $addr = $('[name = addr]').val();
             $.ajax({
                 url:'/ul/menu/publish/add/',
-                type:'POST',
+                type:'GET',
                 data:{'name':$name,'addr':$addr},
                 success:function(data){
                     if(data=='ok'){

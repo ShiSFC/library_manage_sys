@@ -2,6 +2,7 @@
 {% load my_tags %}
 {% block book_list %}
     <form action="{% url 'book_query' %}" method="post"  style="float:left;">
+                {% csrf_token %}
         <p>
             <input type="text" placeholder="可输入书名、作者、出版社" name="title">
             <input type="submit" class="btn btn-info" value="Search">
@@ -21,6 +22,7 @@
         </div>
         <div class="modal-body">
             <form>
+                {% csrf_token %}
                 <div class="form-group">
                     <input type="text" class="form-control" placeholder="读者证号" name="certificate">
                 </div>
@@ -103,7 +105,7 @@
             var $days = $('[name = days]').val();
             $.ajax({
                 url:'/ul/menu/book/borrow/',
-                type:'POST',
+                type:'GET',
                 data:{'certificate':$certificate,'days':$days,'id':$id},
                 success:function(data){
                     if(data=='ok'){
