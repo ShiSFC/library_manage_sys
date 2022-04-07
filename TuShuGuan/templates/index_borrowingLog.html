@@ -1,0 +1,69 @@
+{% extends 'base_reader.html' %}
+{% block book_list %}
+<!--    <form action="{% url 'borrowingLog_query' %}" method="post"  style="float:left">-->
+<!--        <p>-->
+<!--            <input type="text" placeholder="可输入借阅者、书籍" name="borrowingLog">-->
+<!--            <input type="submit" class="btn btn-info" value="Search">-->
+<!--        </p>-->
+<!--    </form>-->
+    <span><a href="{% url 'index_log' %}?return=t">
+        <button class="btn btn-info" style="float:right; margin-right:20px">查看归还记录</button></a>
+    </span>
+    <span><a href="{% url 'index_log' %}?return=f">
+        <button class="btn btn-info" style="float:right; margin-right:20px">查看未归还记录</button></a>
+    </span>
+    <table class="table table-hover">
+        <tr>
+            <th>序号</th>
+            <th>书籍</th>
+            <th>借/还书</th>
+            <th>借出日期</th>
+            <th>应还日期</th>
+            <th>实际还书日期</th>
+<!--            <th colspan="2" style="text-align: center">操作</th>-->
+        </tr>
+        {% for log in book_list %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ log.book.title }}</td>
+            {% if log.returned %}
+            <td>已归还</td>
+            {% else %}
+            <td>借出</td>
+            {% endif %}
+            <td>{{ log.borrowDate|date:'Y-m-d H:i:s' }}</td>
+            <td>{{ log.returnedDate|date:'Y-m-d' }}</td>
+            <td>{{ log.actualDate|date:'Y-m-d H:i:s' }}</td>
+<!--            <td colspan="2" style="text-align: center">-->
+<!--                <a href="{% url 'borrowingLog_edit' %}?id={{ log.id }}"><button class="btn-info">编辑</button></a>-->
+<!--                {% if not log.returned %}-->
+<!--                <a href="{% url 'borrowingLog_return' %}?id={{ log.id }}"><button class="btn-info">还书</button></a>-->
+<!--                {% else %}-->
+<!--                <a href="{% url 'borrowingLog_del' %}?id={{ log.id }}"><button class="btn-danger">删除</button></a>-->
+<!--                {% endif %}-->
+<!--            </td>-->
+        </tr>
+        {% endfor %}
+    </table>
+    <nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
+        <ul class="pagination">
+        {% if book_list.has_previous %}
+            <li><a href="{% url 'index_log' %}?page={{ book_list.previous_page_number }}&return={{ returned|default:'o' }}">上页<span class="sr-only">(current)</span></a></li>
+        {% else %}
+            <li class="disabled"><a href="#">上页</a></li>
+        {% endif %}
+        {% for page in p.page_range %}
+            {% if page_number == page %}
+                <li><a href="{% url 'index_log' %}?page={{ page }}&return={{ returned|default:'o' }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li><a href="{% url 'index_log' %}?page={{ page }}&return={{ returned|default:'o' }}">{{ page }}<span class="sr-only">(current)</span></a></li>
+            {% endif %}
+        {% endfor %}
+        {% if book_list.has_next %}
+            <li><a href="{% url 'index_log' %}?page={{ book_list.next_page_number }}&return={{ returned|default:'o' }}">下页<span class="sr-only">(current)</span></a></li>
+        {% else %}
+            <li class="disabled"><a href="#">下页</a></li>
+        {% endif %}
+    </ul>
+    </nav>
+{% endblock %}

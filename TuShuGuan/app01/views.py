@@ -15,8 +15,8 @@ from app01 import models
 from app01.models import Regist, Log_in
 
 
+# 管理员 登录判断装饰器
 def login_required(view_func):
-    '''登录判断装饰器'''
     def wrapper(request, *view_args, **view_kwargs):
         # 判断用户是否登录
         if request.session.has_key('islogin') and request.session['islogin']:
@@ -24,7 +24,20 @@ def login_required(view_func):
             return view_func(request, *view_args, **view_kwargs)
         else:
             # 用户未登录,跳转到登录页
-            return redirect('/login')
+            return redirect('login')
+    return wrapper
+
+
+# 借阅者 登录判断装饰器
+def login_reader_required(view_func):
+    def wrapper(request, *view_args, **view_kwargs):
+        # 判断用户是否登录
+        if request.session.has_key('isreaderlogin') and request.session['isreaderlogin']:
+            # 用户已登录,调用对应的视图
+            return view_func(request, *view_args, **view_kwargs)
+        else:
+            # 用户未登录,跳转到登录页
+            return redirect('login_reader')
     return wrapper
 
 
@@ -65,28 +78,33 @@ def login(request):
         #     username = ''
         obj = Log_in()
         return render(request, 'login.html', {'obj': obj})
-        # return render(request, 'booktest/login.html', {'username': username})
-    # if request.method == 'GET':
-    #     obj = Log_in()
-    #     return render(request, 'login.html', {'obj': obj})
-    # else:
-    #     obj = Log_in(request.POST)
-    #     if obj.is_valid():
-    #         data = obj.cleaned_data
-    #         user = auth.authenticate(username=data.get('user'),
-    #                                  password=data.get('pwd'))
-    #         if user:
-    #             auth.login(request, user)
-    #             return redirect('/ul/menu/book/')
-    #         else:
-    #             obj.error_message = '用户名或密码错误'
-    #             return render(request, 'login.html', {'obj': obj})
-    #     else:
-    #         return render(request, 'login.html', {'obj': obj})
 
 
+# 借阅者登录
+def login_reader(request):
+    # 判断用户是否登录
+    if request.session.has_key('isreaderlogin') and request.session['isreaderlogin']:
+        # 用户已登录, 跳转到修改密码页面
+        return redirect('index')
+    else:
+        if request.method == 'GET':
+            return render(request, 'login_reader.html')
+        else:
+            certificate = request.POST.get('certificate')
+            password = request.POST.get('password')
+            obj = models.Reader.objects.filter(certificate=certificate, password=password)
+            # print(obj)
+            if obj:
+                request.session['isreaderlogin'] = True
+                request.session['certificate'] = certificate
+                request.session['username'] = obj[0].name
+                return redirect('index')
+            else:
+                return render(request, 'login_reader.html')
+
+
+# 管理员登录校验
 def login_check(request):
-    '''登录校验视图'''
     obj = Log_in(request.POST)
     # remember = request.POST.get('remember')
     # print(remember)
@@ -118,15 +136,63 @@ def login_check(request):
     return render(request, 'login.html', {'obj': obj})
 
 
+# 重置密码
+@login_required
+def set_password(request):
+    if request.method == 'GET':
+        return render(request, 'set_password.html')
+    else:
+        oldpwd = request.POST.get('oldpwd')
+        newpwd = request.POST.get('newpwd')
+        user = request.user
+        if user.check_password(oldpwd) and re.match('^\w{6}$', newpwd):
+            user.set_password(newpwd)
+            user.save()
+            request.session['islogin'] = False
+            return redirect('/login/')
+        else:
+            return render(request, 'set_password.html')
+
+# 重置密码
+@login_reader_required
+def index_set_password(request):
+    if request.method == 'GET':
+        return render(request, 'index_set_password.html')
+    else:
+        oldpwd = request.POST.get('oldpwd')
+        newpwd = request.POST.get('newpwd')
+        certificate = request.session['certificate']
+        reader = models.Reader.objects.filter(certificate=certificate, password=oldpwd).first()
+        print(re.match('^\w{6,16}$', newpwd))
+        if reader and re.match('^\w{6,16}$', newpwd):
+            reader.__dict__.update(password=newpwd)
+            reader.save()
+            request.session['isreaderlogin'] = False
+            request.session['certificate'] = ''
+            request.session['username'] = ''
+            return redirect('/login_reader/')
+        else:
+            return render(request, 'index_set_password.html')
+
+
 # 注销
 def logout(request):
-    auth.logout(request)
-    request.session['islogin'] = False
-    return redirect('index')
+    if request.session.has_key('islogin') and request.session['islogin']:
+        auth.logout(request)
+        request.session['islogin'] = False
+        return redirect('login')
+    if request.session.has_key('isreaderlogin') and request.session['isreaderlogin']:
+        request.session['isreaderlogin'] = False
+        request.session['certificate'] = ''
+        request.session['username'] = ''
+        return redirect('login_reader')
+    return redirect(request.get_full_path())
 
 
-# 未登录时可查看书籍
+# 借阅者 查看书籍
+@login_reader_required
 def index(request):
+    print(request.session['username'])
     page_number = request.GET.get("page")
     books = models.Book.objects.all()
     p = Paginator(books, 10)
@@ -144,6 +210,7 @@ def index(request):
 
 TITLE = {}
 # 查询书籍
+@login_reader_required
 def index_query(request):
     global TITLE
     title = ''
@@ -184,22 +251,53 @@ def index_query(request):
     return render(request, 'index_query.html', locals())
 
 
-# 重置密码
-@login_required
-def set_password(request):
-    if request.method == 'GET':
-        return render(request, 'set_password.html')
+# 借阅者 书籍详情
+@login_reader_required
+def book_reader_detail(request):
+    id = request.GET.get('id')
+    obj = models.Book.objects.filter(id=id).first()
+    if obj:
+        return render(request, 'index_book_detail.html', locals())
     else:
-        oldpwd = request.POST.get('oldpwd')
-        newpwd = request.POST.get('newpwd')
-        user = request.user
-        if user.check_password(oldpwd):
-            user.set_password(newpwd)
-            user.save()
-            request.session['islogin'] = False
-            return redirect('/login/')
-        else:
-            return render(request, 'set_password.html')
+        return HttpResponse('该书籍不存在！')
+
+
+# 借阅者 日志信息
+@login_reader_required
+def index_log(request):
+    # print(request.get_full_path())
+    page_number = request.GET.get("page")
+    returned = request.GET.get("return")
+    certificate = request.session['certificate']
+    reader = models.Reader.objects.filter(certificate=certificate).first()
+    book_lists = reader.borrowinglog_set.all()
+    if returned == 'f':
+        book_lists = book_lists.filter(returned=False)
+    elif returned == 't':
+        book_lists = book_lists.filter(returned=True)
+    p = Paginator(book_lists, 10)
+    try:
+        book_list = p.page(page_number)
+        page_number = int(page_number)
+    except EmptyPage:
+        book_list = p.page(p.num_pages)
+        page_number = p.num_pages
+    except PageNotAnInteger:
+        book_list = p.page(1)
+        page_number = 1
+    return render(request, 'index_borrowingLog.html', locals())
+
+
+# 借阅者 书籍详情
+@login_reader_required
+def index_reader(request):
+    certificate = request.session['certificate']
+    obj = models.Reader.objects.filter(certificate=certificate).first()
+    if obj:
+        logs = obj.borrowinglog_set.filter(returned=False)
+        return render(request, 'index_reader.html', locals())
+    else:
+        return HttpResponse('出错了！')
 
 
 # 书籍信息

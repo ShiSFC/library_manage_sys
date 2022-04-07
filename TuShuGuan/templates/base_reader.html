@@ -45,7 +45,7 @@
         }
         ul.title li{
             font-size:16px;
-            padding-top: 60px;
+            padding-top: 80px;
         }
          #system{
              margin-left: 22px;
@@ -56,7 +56,7 @@
 <!--             display:block;-->
              width:160px;
              height:60px;
-<!--             background-color: whitesmoke;-->
+             background-color: whitesmoke;
          }
          .table{
             margin-bottom:70px;
@@ -74,37 +74,34 @@
     {% endblock %}
 </head>
 <body>
+{% load my_tags %}
 <div class="content">
     <div class="header">
         <a href="{% url 'book_show' %}" id="system">图书馆管理系统</a>
-<!--        <a href="{% url 'book_show' %}" style="margin-left: 60px;text-align:center;line-height: 48px;font-size: 20px;color: wheat">首页</a>-->
+<!--        <span style="margin-left: 430px;color: wheat">欢迎您</span>-->
         <a href="{% url 'logout' %}" style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: wheat;text-decoration: none"><button class="btn btn-danger">注销</button></a>
-        <a href="/set_password/" style="float: right; margin-right: 20px;text-align:center;line-height:60px;color: wheat;text-decoration: none"><button class="btn btn-info">修改密码</button></a>
-        <span style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: deepskyblue">欢迎您&nbsp;&nbsp;{{ request.user }}</span>
+        <a href="{% url 'index_set_password' %}" style="float: right; margin-right: 20px;text-align:center;line-height:60px;color: wheat;text-decoration: none"><button class="btn btn-info">修改密码</button></a>
+        <span style="float: right; margin-right: 20px;text-align:center;line-height: 60px;color: deepskyblue">欢迎您&nbsp;&nbsp;{{ request.session.username }}</span>
+<!--        <a href="{% url 'login' %}" style="float: right; margin-right: 80px;text-align:center;line-height: 60px;"><button class="btn btn-info">请登录</button></a>-->
     </div>
     <div class="left">
         <ul class="title">
-            <li><a href="{% url 'book_show' %}" style="text-decoration: none">书籍</a></li>
-            <li><a href="{% url 'borrowingLog_show' %}" style="text-decoration: none">借阅管理</a></li>
-            <li><a href="{% url 'reader_show' %}" style="text-decoration: none">读者管理</a></li>
-            <li><a href="{% url 'author_show' %}" style="text-decoration: none">作者</a></li>
-            <li><a href="{% url 'publish_show' %}" style="text-decoration: none">出版社</a></li>
-            <li><a href="{% url 'register' %}" style="text-decoration: none">注册新管理员</a></li>
+            <li><a href="{% url 'index' %}" style="text-decoration: none">书籍</a></li>
+            <li><a href="{% url 'index_log' %}" style="text-decoration: none;">借阅日志信息</a></li>
+            <li><a href="{% url 'index_reader' %}" style="text-decoration: none;">个人信息</a></li>
+<!--            <li><a href="#" style="text-decoration: none;opacity:0.3;cursor:not-allowed;">出版社</a></li>-->
         </ul>
     </div>
     <div class="container" style="min-height:600px;">
-        <div class="row">
-            <div class="col-md-9 col-md-offset-1">
-                {% block book_list %}
-                {% endblock %}
-            </div>
-        </div>
+    <div class="row">
+    <div class="col-md-9 col-md-offset-1">
+        {% block book_list %}
+        {% endblock %}
+    </div>
+    </div>
     </div>
     {% block content %}
     {% endblock %}
 </div>
 </body>
-{% block js %}
-
-{% endblock %}
 </html>

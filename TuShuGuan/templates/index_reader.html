@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_reader.html' %}
 {% load my_tags %}
 {% block css %}
 <style>
@@ -6,6 +6,7 @@
         color: white;
         background:url('/static/dist/img/book6.jpg') repeat;
         margin-bottom: 8px;
+        min-height:600px;
     }
     ul.edit li{
         margin-top:24px;
@@ -15,7 +16,7 @@
     .container{padding:0px;}
     label,caption{
         color:hsla(240, 80%, 90%, 0.9);
-        width:70px;
+        width:100px;
         font-size:16px;
     }
     label+span{
@@ -37,56 +38,22 @@
 <div class="row">
 <div class="col-md-10 col-md-offset-1" style="margin-top:20px;">
     <div>
-        <label>书名:</label>
-        <span style="font-size: 42px;">{{ obj.title }}</span>
+        <label>姓名:</label>
+        <span style="font-size: 42px;">{{ obj.name }}</span>
     </div>
     <div>
-        <label>作者:</label>
-        <span>
-            {% for author in obj.author.all %}
-                <span>{{ author.name }}
-                {% if not forloop.last %}、{% endif %}
-                </span>
-            {% endfor %}
-        </span>
+        <label>借阅证号:</label>
+        <span>{{ obj.certificate }}</span>
     </div>
     <div>
-        <label>价格:</label>
-        <span>{{ obj.price }}</span>
+        <label>可借书籍数:</label>
+        <span>{{ obj.availableBooks }}</span>
     </div>
     <div>
-        <label>总数量:</label>
-        <span>{{ obj.totalCount }}</span>
+        <label>已借书籍数:</label>
+        <span>{{ obj.borrowedBooks }}</span>
     </div>
-    <div>
-        <label>剩余数量:</label>
-        <span>{{ obj.totalCount|my_filter:obj.borrowCount }}</span>
-    </div>
-    <div>
-        <label>出版社:</label>
-        <span>{{ obj.publish.name }}</span>
-    </div>
-    <div>
-        <label>出版日期:</label>
-        <span>{{ obj.publishDate }}</span>
-    </div>
-    <div>
-        <label>ISBN:</label>
-        <span>{{ obj.isbn }}</span>
-    </div>
-    <div>
-        <label>分类号:</label>
-        <span>{{ obj.classification }}</span>
-    </div>
-    <div>
-        <label>入库时间:</label>
-        <span>{{ obj.enterDate }}</span>
-    </div>
-    <div>
-        <label>简介:</label>
-        <p>{{ obj.description|default:'无' }}</p>
-    </div>
-    {% if request.session.islogin %}
+    {% if logs %}
     <div style="margin-top:20px;color:hsl(0, 100%, 90%);">
         <table class="table" border="5">
             {% for log in logs %}
@@ -94,14 +61,14 @@
                 <caption>借阅信息</caption>
                 <tr style="color:hsla(240, 80%, 90%, 0.9);">
                     <th>序号</th>
-                    <th>读者证号</th>
+                    <th>书籍</th>
                     <th>借出日期</th>
                     <th>应还日期</th>
                 </tr>
             {% endif %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ log.reader.certificate }}</td>
+                    <td>{{ log.book.title }}</td>
                     <td>{{ log.borrowDate|date:'Y-m-d H:i:s' }}</td>
                     <td>{{ log.returnedDate|date:'Y-m-d' }}</td>
                 </tr>

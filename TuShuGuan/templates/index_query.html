@@ -1,153 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>图书馆</title>
-    <script src="/static/dist/js/jquery-3.2.1.min.js"></script>
-    <script src="/static/dist/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="/static/dist/css/bootstrap.min.css">
-    <style>
-        body{
-            background-size: 100%;
-            background-repeat: no-repeat;
-        }
-        #canel{ margin-left: 180px; }
-
-        *{ margin:0 }
-        .header{
-            width: 100%;
-            height: 60px;
-            background-color: whitesmoke;
-<!--            opacity :fixed;-->
-<!--            position: fixed;-->
-<!--            top: 0px;-->
-<!--            left: 0px;-->
-        }
-        .left{
-            width: 160px;
-            background-color: whitesmoke;
-            height: 600px;
-<!--            position: fixed;-->
-<!--            top: 0px;-->
-<!--            left: 0px;-->
-<!--            bottom: 0px;-->
-        }
-        .container{
-            background-color:rgba(255, 255, 178, 0.5);
-            position:absolute;
-            top:60px;
-            left:160px;
-            padding:0px;
-<!--            margin-left: 160px;-->
-        }
-        ul{
-           list-style-type: none;
-        }
-        ul.title li{
-            font-size:16px;
-            padding-top: 80px;
-        }
-         #system{
-             margin-left: 22px;
-             text-shadow: 2px 2px 2px deepskyblue;
-             text-align:center;
-             line-height: 58px;
-             font-size: 22px;
-<!--             display:block;-->
-             width:160px;
-             height:60px;
-             background-color: whitesmoke;
-         }
-         .table{
-            margin-bottom:70px;
-         }
-        .row{
-            padding-top:30px;
-            margin-left:0px;
-            margin-right:0px;
-        }
-<!--        .col-md-9 button{-->
-<!--            margin-bottom:20px;-->
-<!--        }-->
-    </style>
-</head>
-<body>
+{% extends 'base_reader.html' %}
 {% load my_tags %}
-<div class="content">
-    <div class="header">
-        <a href="{% url 'book_show' %}" id="system">图书馆管理系统</a>
-<!--        <span style="margin-left: 430px;color: wheat">欢迎您</span>-->
-        <a href="{% url 'login' %}" style="float: right; margin-right: 80px;text-align:center;line-height: 60px;"><button class="btn btn-info">请登录</button></a>
-    </div>
-    <div class="left">
-        <ul class="title">
-            <li><a href="{% url 'index' %}" style="text-decoration: none">书籍</a></li>
-            <li><a href="#" style="text-decoration: none;opacity:0.4;cursor:not-allowed;">借阅管理</a></li>
-            <li><a href="#" style="text-decoration: none;opacity:0.4;cursor:not-allowed;">读者管理</a></li>
-            <li><a href="#" style="text-decoration: none;opacity:0.3;cursor:not-allowed;">作者</a></li>
-            <li><a href="#" style="text-decoration: none;opacity:0.3;cursor:not-allowed;">出版社</a></li>
-        </ul>
-    </div>
-    <div class="container" style="min-height:600px;">
-        <div class="row">
-            <div class="col-md-9 col-md-offset-1">
-                    <form action="{% url 'index_query' %}" method="post"  style="float:left;">
-                {% csrf_token %}
-        <p>
-            <input type="text" placeholder="可输入书名、作者、出版社" name="title">
-            <input type="submit" class="btn btn-info" value="Search">
-        </p>
-    </form>
-                    <table class="table table-hover">
-            <tr>
-                <th>序号</th>
-                <th>书名</th>
-                <th>作者</th>
-                <th>出版社</th>
-                <th>剩余数量</th>
-                <th style="text-align: center">操作</th>
-            </tr>
-            {% for book in book_list %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ book.title }}</td>
-                <td>
-                    {% for author in book.author.all %}
-                        {{ author.name }}
-                    {% endfor %}
-                </td>
-                <td>{{ book.publish.name }}</td>
-                <td>{{ book.totalCount|my_filter:book.borrowCount }}</td>
-                <td style="text-align: center">
-                    <a href="{% url 'book_detail' %}?id={{ book.id }}" style="margin-right:5px"><button class="btn-info">详情</button></a>
-                </td>
-            </tr>
+{% block book_list %}
+<form action="{% url 'index_query' %}" method="post"  style="float:left;">
+{% csrf_token %}
+<p>
+<input type="text" placeholder="可输入书名、作者、出版社" name="title">
+<input type="submit" class="btn btn-info" value="Search">
+</p>
+</form>
+<table class="table table-hover">
+    <tr>
+        <th>序号</th>
+        <th>书名</th>
+        <th>作者</th>
+        <th>出版社</th>
+        <th>剩余数量</th>
+        <th style="text-align: center">操作</th>
+    </tr>
+    {% for book in book_list %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ book.title }}</td>
+        <td>
+            {% for author in book.author.all %}
+                {{ author.name }}
             {% endfor %}
-        </table>
-                    <nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
-                        <ul class="pagination">
-                            {% if book_list.has_previous %}
-                                <li><a href="{% url 'index_query' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
-                            {% else %}
-                                <li class="disabled"><a href="#">上页</a></li>
-                            {% endif %}
-                            {% for page in p.page_range %}
-                                {% if page_number == page %}
-                                    <li><a href="{% url 'index_query' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
-                                {% else %}
-                                    <li><a href="{% url 'index_query' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
-                                {% endif %}
-                            {% endfor %}
-                            {% if book_list.has_next %}
-                                <li><a href="{% url 'index_query' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
-                            {% else %}
-                                <li class="disabled"><a href="#">下页</a></li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-            </div>
-        </div>
-    </div>
-</div>
-</body>
-</html>
+        </td>
+        <td>{{ book.publish.name }}</td>
+        <td>{{ book.totalCount|my_filter:book.borrowCount }}</td>
+        <td style="text-align: center">
+            <a href="{% url 'book_reader_detail' %}?id={{ book.id }}" style="margin-right:5px"><button class="btn-info">详情</button></a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<nav aria-label="Page navigation" style="position: fixed;bottom: 5px;right:50%">
+    <ul class="pagination">
+        {% if book_list.has_previous %}
+            <li><a href="{% url 'index_query' %}?page={{ book_list.previous_page_number }}">上页<span class="sr-only">(current)</span></a></li>
+        {% else %}
+            <li class="disabled"><a href="#">上页</a></li>
+        {% endif %}
+        {% for page in p.page_range %}
+            {% if page_number == page %}
+                <li><a href="{% url 'index_query' %}?page={{ page }}" style="color:red">{{ page }}<span class="sr-only">(current)</span></a></li>
+            {% else %}
+                <li><a href="{% url 'index_query' %}?page={{ page }}">{{ page }}<span class="sr-only">(current)</span></a></li>
+            {% endif %}
+        {% endfor %}
+        {% if book_list.has_next %}
+            <li><a href="{% url 'index_query' %}?page={{ book_list.next_page_number }}">下页<span class="sr-only">(current)</span></a></li>
+        {% else %}
+            <li class="disabled"><a href="#">下页</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}

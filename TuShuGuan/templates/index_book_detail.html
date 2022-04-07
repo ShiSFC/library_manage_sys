@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_reader.html' %}
 {% load my_tags %}
 {% block css %}
 <style>
@@ -13,7 +13,7 @@
         display:block;
     }
     .container{padding:0px;}
-    label,caption{
+    label{
         color:hsla(240, 80%, 90%, 0.9);
         width:70px;
         font-size:16px;
@@ -86,29 +86,6 @@
         <label>简介:</label>
         <p>{{ obj.description|default:'无' }}</p>
     </div>
-    {% if request.session.islogin %}
-    <div style="margin-top:20px;color:hsl(0, 100%, 90%);">
-        <table class="table" border="5">
-            {% for log in logs %}
-            {% if forloop.first %}
-                <caption>借阅信息</caption>
-                <tr style="color:hsla(240, 80%, 90%, 0.9);">
-                    <th>序号</th>
-                    <th>读者证号</th>
-                    <th>借出日期</th>
-                    <th>应还日期</th>
-                </tr>
-            {% endif %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ log.reader.certificate }}</td>
-                    <td>{{ log.borrowDate|date:'Y-m-d H:i:s' }}</td>
-                    <td>{{ log.returnedDate|date:'Y-m-d' }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-    {% endif %}
 </div>
 </div>
 </div>

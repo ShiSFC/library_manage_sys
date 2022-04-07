@@ -70,7 +70,7 @@ ADDONE = getNo()
 
 class Reader(models.Model):
     certificate = models.CharField(unique=True, max_length=10, validators=[RegexValidator(r'^[0-9]{10}$', "借书证号只能为10位数字")])
-    name = models.CharField(max_length=16)
+    name = models.CharField(max_length=16, null=True, blank=True)
     password = models.CharField(max_length=16)
     availableBooks = models.IntegerField(default=4)
     borrowedBooks = models.IntegerField(default=0)
